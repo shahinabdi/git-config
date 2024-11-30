@@ -1,0 +1,71 @@
+[user]
+   name = $git_name
+   email = $git_email
+[core]
+   editor = vim
+   excludesfile = ~/.gitignore_global
+   autocrlf = input
+   whitespace = trailing-space,space-before-tab
+[color]
+   ui = auto
+   diff = auto
+   status = auto
+   branch = auto
+[init]
+   defaultBranch = main
+[pull]
+   rebase = true
+[push]
+   default = current
+   followTags = true
+[merge]
+   tool = vimdiff
+   conflictstyle = diff3
+   ff = false
+[diff]
+   tool = vimdiff
+   colorMoved = default
+[alias]
+   # Basic commands
+   st = status
+   co = checkout
+   br = branch
+   ci = commit
+   cp = cherry-pick
+   cl = clone
+   
+   # Status & Diff
+   sb = status -sb
+   ds = diff --staged
+   
+   # Add & Commit
+   aa = add --all
+   cm = commit -m
+   ca = commit --amend
+   unstage = reset HEAD --
+   
+   # Branch & Merge
+   ff = merge --ff-only
+   pb = push -u origin HEAD
+   
+   # Log
+   last = log -1 HEAD
+   lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
+   lg1 = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)'
+   
+   # Info
+   tags = tag -l
+   branches = branch -a
+   remotes = remote -v
+   
+   # Undo
+   undo = reset --soft HEAD~1
+   amend = commit --amend
+   untrack = rm --cached
+[branch]
+   autosetuprebase = always
+[commit]
+   verbose = true
+   template = ~/.gitmessage
+[fetch]
+   prune = true
