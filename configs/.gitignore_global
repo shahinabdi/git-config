@@ -1,0 +1,34 @@
+# Fichiers système
+.DS_Store
+Thumbs.db
+.directory
+
+# Éditeurs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Environnements Python
+venv/
+.env
+.venv
+__pycache__/
+*.py[cod]
+*.so
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Logs et bases de données
+*.log
+*.sqlite
+
+# Build
+dist/
+build/
+*.egg-info/

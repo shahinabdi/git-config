@@ -1,0 +1,127 @@
+[user]
+   name = 
+   email = 
+
+[core]
+   editor = vim
+   excludesfile = ~/.gitignore_global
+   autocrlf = input
+   whitespace = trailing-space,space-before-tab
+   pager = less -FRX
+   compression = 9
+   bigFileThreshold = 512m
+   fsmonitor = true
+
+[color]
+   ui = auto
+   diff = auto
+   status = auto
+   branch = auto
+
+[init]
+   defaultBranch = main
+
+[pull]
+   rebase = true
+
+[push]
+   default = current
+   followTags = true
+   autoSetupRemote = true
+
+[merge]
+   tool = vimdiff
+   conflictstyle = diff3
+   ff = false
+
+[diff]
+   tool = vimdiff
+   colorMoved = default
+   algorithm = patience
+   compactionHeuristic = true
+   mnemonicPrefix = true
+
+[alias]
+   # Basic commands
+   st = status
+   co = checkout
+   br = branch
+   ci = commit
+   cp = cherry-pick
+   cl = clone
+   
+   # Status & Diff
+   sb = status -sb
+   ds = diff --staged
+   
+   # Add & Commit
+   aa = add --all
+   cm = commit -m
+   ca = commit --amend
+   unstage = reset HEAD --
+   
+   # Branch & Merge
+   ff = merge --ff-only
+   pb = push -u origin HEAD
+   
+   # Log
+   last = log -1 HEAD
+   lg = log --graph --pretty=format:'%Cred%h%Creset -%C(yellow)%d%Creset %s %Cgreen(%cr) %C(bold blue)<%an>%Creset'
+   lg1 = log --graph --abbrev-commit --decorate --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(dim white)- %an%C(reset)%C(bold yellow)%d%C(reset)'
+   
+   # Info
+   tags = tag -l
+   branches = branch -a
+   remotes = remote -v
+   
+   # Undo
+   undo = reset --soft HEAD~1
+   amend = commit --amend
+   untrack = rm --cached
+
+[branch]
+   autosetuprebase = always
+   sort = -committerdate
+
+[fetch]
+   prune = true
+   pruneTags = true
+
+[credential]
+   helper = cache --timeout=3600
+
+[rebase]
+   autoStash = true
+   autosquash = true
+   updateRefs = true
+
+[status]
+   showUntrackedFiles = all
+   submoduleSummary = true
+
+[log]
+   follow = true
+   date = relative
+
+[commit]
+   verbose = true
+   template = ~/.gitmessage
+
+[help]
+   autocorrect = 20
+
+[tag]
+   sort = version:refname
+
+[blame]
+   coloring = highlightRecent
+
+[protocol]
+   version = 2
+
+[feature]
+   manyFiles = true
+
+[maintenance]
+   auto = true
+   strategy = incremental

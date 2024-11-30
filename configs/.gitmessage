@@ -1,0 +1,19 @@
+# <type>: <subject>
+
+# <detailed description>
+
+# <ticket/issue reference>
+
+# Types: feat, fix, docs, style, refactor, test, chore
+# Subject should not exceed 50 characters
+# Description: explain why this change is needed
+# Reference: ticket or issue number
+
+# Example:
+# feat: implement user authentication
+# 
+# - Add JWT token implementation
+# - Set up user validation middleware
+# - Create login/logout endpoints
+# 
+# Ref: PROJ-123
