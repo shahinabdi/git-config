@@ -15,8 +15,17 @@ A professional Git configuration setup with optimized settings, useful aliases, 
 ```bash
 git clone https://github.com/shahinabdi/git-config.git
 cd git-config
-chmod +x install.sh
-./install.sh
+```
+
+# For Linux/macOS
+```bash
+chmod +x setup-git-config.sh
+./setup-git-config.sh
+```
+
+# For Windows (Run in PowerShell)
+```bash
+.\setup-git-config.ps1
 ```
 ## Features
 
