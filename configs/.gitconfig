@@ -11,12 +11,11 @@
    compression = 9
    bigFileThreshold = 512m
    fsmonitor = true
+   untrackedCache = true
+   commitGraph = true
 
 [color]
    ui = auto
-   diff = auto
-   status = auto
-   branch = auto
 
 [init]
    defaultBranch = main
@@ -31,15 +30,15 @@
 
 [merge]
    tool = vimdiff
-   conflictstyle = diff3
+   conflictstyle = zdiff3
    ff = false
 
 [diff]
    tool = vimdiff
    colorMoved = default
-   algorithm = patience
-   compactionHeuristic = true
+   algorithm = histogram
    mnemonicPrefix = true
+   renames = copies
 
 [alias]
    # Basic commands
@@ -49,6 +48,7 @@
    ci = commit
    cp = cherry-pick
    cl = clone
+   sw = switch
    
    # Status & Diff
    sb = status -sb
@@ -58,11 +58,13 @@
    aa = add --all
    cm = commit -m
    ca = commit --amend
+   can = commit --amend --no-edit
    unstage = reset HEAD --
    
    # Branch & Merge
    ff = merge --ff-only
    pb = push -u origin HEAD
+   gone = !git branch -vv | grep ': gone]' | awk '{print $1}'
    
    # Log
    last = log -1 HEAD
@@ -76,7 +78,6 @@
    
    # Undo
    undo = reset --soft HEAD~1
-   amend = commit --amend
    untrack = rm --cached
 
 [branch]
@@ -86,6 +87,7 @@
 [fetch]
    prune = true
    pruneTags = true
+   writeCommitGraph = true
 
 [credential]
    helper = cache --timeout=3600
@@ -108,7 +110,7 @@
    template = ~/.gitmessage
 
 [help]
-   autocorrect = 20
+   autocorrect = prompt
 
 [tag]
    sort = version:refname
@@ -121,6 +123,16 @@
 
 [feature]
    manyFiles = true
+
+[gc]
+   writeCommitGraph = true
+
+[pack]
+   threads = 0
+   useSparse = true
+
+[index]
+   threads = true
 
 [maintenance]
    auto = true
