@@ -1,6 +1,6 @@
 [user]
-   name = 
-   email = 
+   name = $git_name
+   email = $git_email
 
 [core]
    editor = vim
