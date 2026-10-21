@@ -26,6 +26,8 @@ prompt() {
     if { exec 3<>/dev/tty; } 2>/dev/null; then
         IFS= read -r -p "$prompt_text" REPLY <&3
         exec 3>&-
+    elif [[ -z "$SOURCE_FILE" ]]; then
+        fail "No terminal available for input. Download the script and run it directly."
     else
         IFS= read -r -p "$prompt_text" REPLY
     fi
