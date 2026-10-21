@@ -10,30 +10,36 @@
 
 A professional Git configuration setup with optimized settings, useful aliases, and commit message templates.
 
-## Quick Start
+## Install directly (no clone required)
 
 ```bash
-git clone https://github.com/shahinabdi/git-config.git
-cd git-config
+curl -fsSL https://raw.githubusercontent.com/shahinabdi/git-config/main/setup-git-config.sh | bash
 ```
 
-# For Linux/macOS
+Or with `wget`:
 ```bash
-chmod +x setup-git-config.sh
-./setup-git-config.sh
+wget -qO- https://raw.githubusercontent.com/shahinabdi/git-config/main/setup-git-config.sh | bash
 ```
 
-# For Windows (Run in PowerShell)
-```bash
-.\setup-git-config.ps1
+### Windows (PowerShell)
+```powershell
+irm https://raw.githubusercontent.com/shahinabdi/git-config/main/setup-git-config.ps1 | iex
 ```
+
+The installers ask for your Git name, email, and configuration type. See the direct [Linux/macOS installer](https://raw.githubusercontent.com/shahinabdi/git-config/main/setup-git-config.sh) and [Windows installer](https://raw.githubusercontent.com/shahinabdi/git-config/main/setup-git-config.ps1). Review an installer before running it if you want to inspect what it does.
+
+Installation replaces your existing global `.gitconfig`, `.gitignore_global`, and `.gitmessage`; back up any files you want to keep.
+
+If you prefer to inspect or edit the files locally, clone the repository and run `./setup-git-config.sh` (Linux/macOS) or `.\setup-git-config.ps1` (Windows).
+
 ## Features
 
 * Optimized Git configuration
 * Global gitignore file
 * Commit message template
 * Useful Git aliases
-* Automated setup script
+* Interactive installers for Linux, macOS, and Windows
+* Direct installation without cloning the repository
 
 ## Git Aliases
 
@@ -54,7 +60,6 @@ git ca      # commit amend
 * Optimized diff visualization
 * Custom commit message template
 * Enhanced logging
-* Credential caching
 * Automatic branch cleanup
 * Performance optimizations
 

@@ -1,97 +1,94 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Colors
+readonly REPOSITORY_URL="https://raw.githubusercontent.com/shahinabdi/git-config/main"
+readonly SOURCE_FILE="${BASH_SOURCE[0]:-}"
+if [[ -f "$SOURCE_FILE" ]]; then
+    readonly LOCAL_CONFIGS_DIR="$(cd -- "$(dirname -- "$SOURCE_FILE")" && pwd)/configs"
+else
+    readonly LOCAL_CONFIGS_DIR=""
+fi
+readonly TEMP_DIR="$(mktemp -d)"
+trap 'rm -rf -- "$TEMP_DIR"' EXIT
+
 RED='\033[0;31m'
 GREEN='\033[0;32m'
 BLUE='\033[0;34m'
-NC='\033[0m' # No Color
+NC='\033[0m'
 
-# Script directory
-SCRIPT_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-CONFIGS_DIR="$SCRIPT_DIR/configs"
-
-# Welcome message
-echo -e "${BLUE}Git Configuration Setup${NC}\n"
-
-# Check if configs directory exists
-if [ ! -d "$CONFIGS_DIR" ]; then
-    echo -e "${RED}Error: configs directory not found at: $CONFIGS_DIR${NC}"
+fail() {
+    printf "${RED}Error: %s${NC}\n" "$1" >&2
     exit 1
+}
+
+prompt() {
+    local prompt_text="$1"
+    if { exec 3<>/dev/tty; } 2>/dev/null; then
+        IFS= read -r -p "$prompt_text" REPLY <&3
+        exec 3>&-
+    else
+        IFS= read -r -p "$prompt_text" REPLY
+    fi
+}
+
+if ! command -v git >/dev/null 2>&1; then
+    fail "Git is not installed or is not available in PATH."
 fi
 
-# Check if required files exist
-required_files=(".gitconfig" ".gitconfig-lite" ".gitignore_global" ".gitmessage")
-for file in "${required_files[@]}"; do
-    if [ ! -f "$CONFIGS_DIR/$file" ]; then
-        echo -e "${RED}Error: Required file '$file' not found in configs directory${NC}"
-        exit 1
+if [[ -d "$LOCAL_CONFIGS_DIR" ]]; then
+    CONFIGS_DIR="$LOCAL_CONFIGS_DIR"
+else
+    CONFIGS_DIR="$TEMP_DIR/configs"
+    mkdir -p "$CONFIGS_DIR"
+    if command -v curl >/dev/null 2>&1; then
+        download() { curl --fail --silent --show-error --location "$1" --output "$2"; }
+    elif command -v wget >/dev/null 2>&1; then
+        download() { wget --quiet "$1" --output-document="$2"; }
+    else
+        fail "Install curl or wget to download the configuration files."
     fi
+    for file in .gitconfig .gitconfig-lite .gitignore_global .gitmessage; do
+        download "$REPOSITORY_URL/configs/$file" "$CONFIGS_DIR/$file" ||
+            fail "Could not download configs/$file."
+    done
+fi
+
+for file in .gitconfig .gitconfig-lite .gitignore_global .gitmessage; do
+    [[ -f "$CONFIGS_DIR/$file" ]] || fail "Required file is missing: $CONFIGS_DIR/$file"
 done
 
-# Get user input
-read -p "Enter your full name: " git_name
-read -p "Enter your email: " git_email
+printf "${BLUE}Git Configuration Setup${NC}\n\n"
+prompt "Enter your full name: "
+git_name="$REPLY"
+prompt "Enter your email: "
+git_email="$REPLY"
+[[ -n "$git_name" ]] || fail "Name cannot be empty."
+[[ -n "$git_email" ]] || fail "Email cannot be empty."
 
-# Get configuration choice
-echo -e "\nSelect Git configuration type:"
-echo "1. Full (Advanced features and optimizations)"
-echo "2. Lite (Basic features)"
-read -p "Enter your choice (1 or 2): " choice
+printf "\nSelect Git configuration type:\n"
+printf "1. Full (advanced features)\n"
+printf "2. Lite (essential features)\n"
+prompt "Enter your choice (1 or 2): "
+choice="$REPLY"
 
-# Set source config file based on choice
-if [ "$choice" = "1" ]; then
-    source_config="$CONFIGS_DIR/.gitconfig"
-    echo -e "\n${BLUE}Creating full configuration...${NC}"
-else
-    source_config="$CONFIGS_DIR/.gitconfig-lite"
-    echo -e "\n${BLUE}Creating lite configuration...${NC}"
-fi
+case "$choice" in
+    1) source_config="$CONFIGS_DIR/.gitconfig"; config_type="full" ;;
+    2) source_config="$CONFIGS_DIR/.gitconfig-lite"; config_type="lite" ;;
+    *) fail "Choose 1 for Full or 2 for Lite." ;;
+esac
 
-# Create temporary file for substitution
-temp_config=$(mktemp)
+install_dir="${HOME:?HOME is not set}"
+configured_file="$TEMP_DIR/.gitconfig"
+cp "$source_config" "$configured_file"
+git config --file "$configured_file" user.name "$git_name"
+git config --file "$configured_file" user.email "$git_email"
 
-# Replace placeholders with user details
-sed "s/\$git_name/$git_name/g; s/\$git_email/$git_email/g" "$source_config" > "$temp_config"
+cp "$configured_file" "$install_dir/.gitconfig"
+cp "$CONFIGS_DIR/.gitignore_global" "$install_dir/.gitignore_global"
+cp "$CONFIGS_DIR/.gitmessage" "$install_dir/.gitmessage"
+chmod 644 "$install_dir/.gitconfig" "$install_dir/.gitignore_global" "$install_dir/.gitmessage"
 
-# Copy configuration files to home directory
-cp "$temp_config" ~/.gitconfig
-cp "$CONFIGS_DIR/.gitignore_global" ~/.gitignore_global
-cp "$CONFIGS_DIR/.gitmessage" ~/.gitmessage
-
-# Clean up temporary file
-rm "$temp_config"
-
-# Set correct permissions
-chmod 644 ~/.gitconfig ~/.gitignore_global ~/.gitmessage
-
-# Verify the installation
-if [ $? -eq 0 ]; then
-    echo -e "\n${GREEN}Git configuration installed successfully!${NC}"
-    echo -e "\n${BLUE}Installed files:${NC}"
-    echo "- ~/.gitconfig"
-    echo "- ~/.gitignore_global"
-    echo "- ~/.gitmessage"
-    
-    read -p $'\nWould you like to see your git configuration? (y/n): ' show_config
-    if [[ $show_config =~ ^[Yy]$ ]]; then
-        echo -e "\n${BLUE}Your git configuration:${NC}"
-        git config --list
-    fi
-
-    echo -e "\n${BLUE}Test your configuration:${NC}"
-    echo "1. Create test repo: mkdir test && cd test && git init"
-    echo "2. Create file: touch test.txt"
-    echo "3. Add file: git add test.txt"
-    echo "4. Test commit message: git commit"
-else
-    echo -e "${RED}Installation failed. Please check the error messages above.${NC}"
-    exit 1
-fi
-
-# Final instructions
-echo -e "\n${GREEN}Setup complete!${NC}"
-echo -e "Your Git configuration has been installed and configured successfully."
-echo -e "You can find your config files in your home directory:"
-echo -e "  ~/.gitconfig"
-echo -e "  ~/.gitignore_global"
-echo -e "  ~/.gitmessage"
+printf "\n${GREEN}Git %s configuration installed successfully.${NC}\n" "$config_type"
+printf "Installed: %s/.gitconfig, %s/.gitignore_global, %s/.gitmessage\n" \
+    "$install_dir" "$install_dir" "$install_dir"
+printf "Configured identity: %s <%s>\n" "$git_name" "$git_email"

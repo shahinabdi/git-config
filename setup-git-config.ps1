@@ -1,89 +1,73 @@
-# Windows Git Configuration Script
-
-# Set console colors
-$RED = "`e[31m"
-$GREEN = "`e[32m"
-$BLUE = "`e[34m"
-$NC = "`e[0m"
-
-# Welcome message
-Write-Host "${BLUE}Git Configuration Setup${NC}`n"
-
-# Get user details
-$git_name = Read-Host "Enter your full name"
-$git_email = Read-Host "Enter your email"
-
-# Get configuration choice
-Write-Host "`nSelect Git configuration type:"
-Write-Host "1. Full (Advanced features and optimizations)"
-Write-Host "2. Lite (Basic features)"
-$choice = Read-Host "Enter your choice (1 or 2)"
-
-# Set paths
+$ErrorActionPreference = "Stop"
+$repositoryUrl = "https://raw.githubusercontent.com/shahinabdi/git-config/main"
 $homeDir = $env:USERPROFILE
 $gitConfig = Join-Path $homeDir ".gitconfig"
 $gitIgnore = Join-Path $homeDir ".gitignore_global"
 $gitMessage = Join-Path $homeDir ".gitmessage"
-
-# Source config files
-$configsPath = Join-Path $PSScriptRoot "configs"
-$fullConfigPath = Join-Path $configsPath ".gitconfig"
-$liteConfigPath = Join-Path $configsPath ".gitconfig-lite"
+$localConfigsPath = if ([string]::IsNullOrWhiteSpace($PSScriptRoot)) {
+    $null
+} else {
+    Join-Path $PSScriptRoot "configs"
+}
+$temporaryConfigsPath = Join-Path ([System.IO.Path]::GetTempPath()) ([guid]::NewGuid().ToString())
+$stagedConfig = Join-Path $temporaryConfigsPath ".gitconfig"
 
 try {
-    # Verify config files exist
-    if (-not (Test-Path $fullConfigPath)) {
-        throw "Full configuration file not found at: $fullConfigPath"
-    }
-    if (-not (Test-Path $liteConfigPath)) {
-        throw "Lite configuration file not found at: $liteConfigPath"
+    if (-not (Get-Command git -ErrorAction SilentlyContinue)) {
+        throw "Git is not installed or is not available in PATH."
     }
 
-    # Select and read appropriate config file
-    if ($choice -eq "1") {
-        $selectedConfig = Get-Content $fullConfigPath -Raw
-        Write-Host "`n${BLUE}Creating full configuration...${NC}"
+    New-Item -ItemType Directory -Path $temporaryConfigsPath | Out-Null
+    if ($localConfigsPath -and (Test-Path $localConfigsPath)) {
+        $configsPath = $localConfigsPath
     } else {
-        $selectedConfig = Get-Content $liteConfigPath -Raw
-        Write-Host "`n${BLUE}Creating lite configuration...${NC}"
+        $configsPath = $temporaryConfigsPath
+        foreach ($file in @(".gitconfig", ".gitconfig-lite", ".gitignore_global", ".gitmessage")) {
+            $url = "$repositoryUrl/configs/$file"
+            Invoke-WebRequest -Uri $url -OutFile (Join-Path $configsPath $file) -UseBasicParsing
+        }
     }
 
-    # Replace placeholders with user details
-    $selectedConfig = $selectedConfig.Replace('$git_name', $git_name).Replace('$git_email', $git_email)
-    
-    # Copy configuration files
-    $selectedConfig | Set-Content $gitConfig -Force
+    foreach ($file in @(".gitconfig", ".gitconfig-lite", ".gitignore_global", ".gitmessage")) {
+        if (-not (Test-Path (Join-Path $configsPath $file))) {
+            throw "Required configuration file is missing: $file"
+        }
+    }
+
+    Write-Host "Git Configuration Setup`n" -ForegroundColor Blue
+    $gitName = Read-Host "Enter your full name"
+    $gitEmail = Read-Host "Enter your email"
+    if ([string]::IsNullOrWhiteSpace($gitName)) { throw "Name cannot be empty." }
+    if ([string]::IsNullOrWhiteSpace($gitEmail)) { throw "Email cannot be empty." }
+
+    Write-Host "`nSelect Git configuration type:"
+    Write-Host "1. Full (advanced features)"
+    Write-Host "2. Lite (essential features)"
+    $choice = Read-Host "Enter your choice (1 or 2)"
+    switch ($choice) {
+        "1" { $selectedConfig = Join-Path $configsPath ".gitconfig"; $configType = "full" }
+        "2" { $selectedConfig = Join-Path $configsPath ".gitconfig-lite"; $configType = "lite" }
+        default { throw "Choose 1 for Full or 2 for Lite." }
+    }
+
+    Copy-Item $selectedConfig $stagedConfig -Force
+    & git config --file $stagedConfig user.name $gitName
+    if ($LASTEXITCODE -ne 0) { throw "Could not set the Git user name." }
+    & git config --file $stagedConfig user.email $gitEmail
+    if ($LASTEXITCODE -ne 0) { throw "Could not set the Git user email." }
+
+    Copy-Item $stagedConfig $gitConfig -Force
     Copy-Item (Join-Path $configsPath ".gitignore_global") $gitIgnore -Force
     Copy-Item (Join-Path $configsPath ".gitmessage") $gitMessage -Force
 
-    # Convert Windows paths to Git-style paths
-    $gitIgnorePath = $gitIgnore.Replace("\", "/")
-    $gitMessagePath = $gitMessage.Replace("\", "/")
-    
-    # Update paths in .gitconfig
-    git config --global core.excludesfile $gitIgnorePath
-    git config --global commit.template $gitMessagePath
-
-    # Verify installation
-    Write-Host "`n${GREEN}Git configuration installed successfully!${NC}"
-    Write-Host "`n${BLUE}Installed files:${NC}"
-    Write-Host "- $gitConfig"
-    Write-Host "- $gitIgnore"
-    Write-Host "- $gitMessage"
-
-    $show_config = Read-Host "`nWould you like to see your git configuration? (y/n)"
-    if ($show_config -match '^[Yy]$') {
-        Write-Host "`n${BLUE}Your git configuration:${NC}"
-        git config --list
-    }
-
-    Write-Host "`n${BLUE}Test your configuration:${NC}"
-    Write-Host "1. Create test repo: mkdir test; cd test; git init"
-    Write-Host "2. Create file: New-Item test.txt"
-    Write-Host "3. Add file: git add test.txt"
-    Write-Host "4. Test commit message: git commit"
-}
-catch {
-    Write-Host "${RED}Installation failed. Error: $($_.Exception.Message)${NC}"
+    Write-Host "`nGit $configType configuration installed successfully." -ForegroundColor Green
+    Write-Host "Installed: $gitConfig, $gitIgnore, $gitMessage"
+    Write-Host "Configured identity: $gitName <$gitEmail>"
+} catch {
+    Write-Host "Installation failed: $($_.Exception.Message)" -ForegroundColor Red
     exit 1
+} finally {
+    if (Test-Path $temporaryConfigsPath) {
+        Remove-Item $temporaryConfigsPath -Recurse -Force
+    }
 }

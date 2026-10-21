@@ -1,10 +1,5 @@
-[user]
-   name = $git_name
-   email = $git_email
 [core]
-   editor = vim
    excludesfile = ~/.gitignore_global
-   autocrlf = input
    whitespace = trailing-space,space-before-tab
 [color]
    ui = auto
@@ -19,11 +14,8 @@
    default = current
    followTags = true
 [merge]
-   tool = vimdiff
    conflictstyle = diff3
-   ff = false
 [diff]
-   tool = vimdiff
    colorMoved = default
 [alias]
    # Basic commands

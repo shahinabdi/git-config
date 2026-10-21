@@ -2,6 +2,22 @@
 
 > Quick reference for all the shortcuts included in this configuration.
 
+## Installation
+
+Install without cloning the repository:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/shahinabdi/git-config/main/setup-git-config.sh | bash
+```
+
+On Windows PowerShell:
+
+```powershell
+irm https://raw.githubusercontent.com/shahinabdi/git-config/main/setup-git-config.ps1 | iex
+```
+
+Both installers ask for your Git identity and whether to install the full or lite configuration. They replace your global Git config and related template/ignore files.
+
 ---
 
 ## Basic Commands

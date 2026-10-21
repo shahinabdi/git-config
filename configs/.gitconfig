@@ -1,11 +1,5 @@
-[user]
-   name = $git_name
-   email = $git_email
-
 [core]
-   editor = vim
    excludesfile = ~/.gitignore_global
-   autocrlf = input
    whitespace = trailing-space,space-before-tab
    pager = less -FRX
    compression = 9
@@ -24,17 +18,13 @@
    rebase = true
 
 [push]
-   default = current
    followTags = true
    autoSetupRemote = true
 
 [merge]
-   tool = vimdiff
    conflictstyle = zdiff3
-   ff = false
 
 [diff]
-   tool = vimdiff
    colorMoved = default
    algorithm = histogram
    mnemonicPrefix = true
@@ -88,9 +78,6 @@
    prune = true
    pruneTags = true
    writeCommitGraph = true
-
-[credential]
-   helper = cache --timeout=3600
 
 [rebase]
    autoStash = true
